@@ -14,7 +14,7 @@ See [godoc reference](https://godoc.org/github.com/vinci-proxy/intercept) for de
 
 ## Examples
 
-#### Request interceptor
+#### Response interceptor and modifier
 
 ```go
 package main
@@ -28,22 +28,21 @@ import (
 
 func main() {
   fmt.Printf("Server listening on port: %d\n", 3100)
-  vs := vinci.NewServer(vinci.ServerOptions{Address: "localhost", Port: 3100})
+  vs := vinci.NewServer(vinci.ServerOptions{Host: "localhost", Port: 3100})
 
-  vs.Vinci.Use(intercept.Request(func(req *intercept.RequestModifier) {
-    str, _ := req.ReadString()
-    fmt.Printf("Request body: %s \n", str)
-    req.String("foo bar")
+  // Intercept request and modify URI path
+  vs.Use(intercept.Request(func(req *intercept.RequestModifier) {
+    req.Request.RequestURI = "/html"
   }))
 
-  vs.Vinci.Use(intercept.Response(func(res *intercept.ResponseModifier) {
+  // Intercept and replace response body
+  vs.Use(intercept.Response(func(res *intercept.ResponseModifier) {
     data, _ := res.ReadString()
-    fmt.Printf("Response body: %s \n", data)
-    str := strings.Replace(data, "The MIT License", "Apache License", 1)
+    str := strings.Replace(data, "Herman Melville - Moby-Dick", "A Long History", 1)
     res.String(str)
   }))
 
-  vs.Vinci.Forward("http://localhost:8080")
+  vs.Forward("http://httpbin.org")
 
   err := vs.Listen()
   if err != nil {
