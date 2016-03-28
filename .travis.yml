@@ -19,4 +19,4 @@ script:
   - go test -v -race -covermode=atomic -coverprofile=coverage.out
 
 after_success:
-  - goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
+  - goveralls -coverprofile=coverage.out -service=travis-ci
