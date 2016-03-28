@@ -1,6 +1,7 @@
 package intercept
 
 import (
+	"bytes"
 	"errors"
 	"github.com/nbio/st"
 	"io/ioutil"
@@ -43,4 +44,22 @@ func TestReadString(t *testing.T) {
 	str, err = modifier.ReadString()
 	st.Expect(t, err, errRead)
 	st.Expect(t, str, "")
+}
+
+func TestReadBytes(t *testing.T) {
+	bodyBytes := []byte(`{"hello":"bonjour"}`)
+	strReader := bytes.NewBuffer(bodyBytes)
+	body := ioutil.NopCloser(strReader)
+	req := &http.Request{Header: http.Header{}, Body: body}
+	modifier := NewRequestModifier(req)
+	str, err := modifier.ReadBytes()
+	st.Expect(t, err, nil)
+	st.Expect(t, str, bodyBytes)
+
+	body = ioutil.NopCloser(&errorReader{})
+	req = &http.Request{Header: http.Header{}, Body: body}
+	modifier = NewRequestModifier(req)
+	buf, err := modifier.ReadBytes()
+	st.Expect(t, err, errRead)
+	st.Expect(t, len(buf), 0)
 }
