@@ -37,11 +37,13 @@ func TestReadString(t *testing.T) {
 	str, err := modifier.ReadString()
 	st.Expect(t, err, nil)
 	st.Expect(t, str, bodyStr)
+}
 
-	body = ioutil.NopCloser(&errorReader{})
-	req = &http.Request{Header: http.Header{}, Body: body}
-	modifier = NewRequestModifier(req)
-	str, err = modifier.ReadString()
+func TestReadStringError(t *testing.T) {
+	body := ioutil.NopCloser(&errorReader{})
+	req := &http.Request{Header: http.Header{}, Body: body}
+	modifier := NewRequestModifier(req)
+	str, err := modifier.ReadString()
 	st.Expect(t, err, errRead)
 	st.Expect(t, str, "")
 }
@@ -55,10 +57,12 @@ func TestReadBytes(t *testing.T) {
 	str, err := modifier.ReadBytes()
 	st.Expect(t, err, nil)
 	st.Expect(t, str, bodyBytes)
+}
 
-	body = ioutil.NopCloser(&errorReader{})
-	req = &http.Request{Header: http.Header{}, Body: body}
-	modifier = NewRequestModifier(req)
+func TestReadBytesError(t *testing.T) {
+	body := ioutil.NopCloser(&errorReader{})
+	req := &http.Request{Header: http.Header{}, Body: body}
+	modifier := NewRequestModifier(req)
 	buf, err := modifier.ReadBytes()
 	st.Expect(t, err, errRead)
 	st.Expect(t, len(buf), 0)
