@@ -82,3 +82,13 @@ func TestDecodeJSON(t *testing.T) {
 	st.Expect(t, err, nil)
 	st.Expect(t, u.Name, "Rick")
 }
+
+func TestDecodeJSONErrorFromReadBytes(t *testing.T) {
+	body := ioutil.NopCloser(&errorReader{})
+	req := &http.Request{Header: http.Header{}, Body: body}
+	modifier := NewRequestModifier(req)
+	u := user{}
+	err := modifier.DecodeJSON(&u)
+	st.Expect(t, err, errRead)
+	st.Expect(t, u.Name, "")
+}
