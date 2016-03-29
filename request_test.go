@@ -12,11 +12,14 @@ import (
 
 var errRead = errors.New("read error")
 
-type errorReader struct {
-}
+type errorReader struct{}
 
 func (r *errorReader) Read(p []byte) (int, error) {
 	return 0, errRead
+}
+
+type user struct {
+	Name string
 }
 
 func TestNewRequestModifier(t *testing.T) {
@@ -29,7 +32,7 @@ func TestNewRequestModifier(t *testing.T) {
 }
 
 func TestReadString(t *testing.T) {
-	bodyStr := `{"hello":"bonjour"}`
+	bodyStr := `{"name":"Rick"}`
 	strReader := strings.NewReader(bodyStr)
 	body := ioutil.NopCloser(strReader)
 	req := &http.Request{Header: http.Header{}, Body: body}
@@ -49,7 +52,7 @@ func TestReadStringError(t *testing.T) {
 }
 
 func TestReadBytes(t *testing.T) {
-	bodyBytes := []byte(`{"hello":"bonjour"}`)
+	bodyBytes := []byte(`{"name":"Rick"}`)
 	strReader := bytes.NewBuffer(bodyBytes)
 	body := ioutil.NopCloser(strReader)
 	req := &http.Request{Header: http.Header{}, Body: body}
@@ -66,4 +69,16 @@ func TestReadBytesError(t *testing.T) {
 	buf, err := modifier.ReadBytes()
 	st.Expect(t, err, errRead)
 	st.Expect(t, len(buf), 0)
+}
+
+func TestDecodeJSON(t *testing.T) {
+	bodyBytes := []byte(`{"name":"Rick"}`)
+	strReader := bytes.NewBuffer(bodyBytes)
+	body := ioutil.NopCloser(strReader)
+	req := &http.Request{Header: http.Header{}, Body: body}
+	modifier := NewRequestModifier(req)
+	u := user{}
+	err := modifier.DecodeJSON(&u)
+	st.Expect(t, err, nil)
+	st.Expect(t, u.Name, "Rick")
 }
