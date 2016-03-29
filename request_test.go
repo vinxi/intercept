@@ -2,6 +2,7 @@ package intercept
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"github.com/nbio/st"
 	"io/ioutil"
@@ -90,5 +91,19 @@ func TestDecodeJSONErrorFromReadBytes(t *testing.T) {
 	u := user{}
 	err := modifier.DecodeJSON(&u)
 	st.Expect(t, err, errRead)
+	st.Expect(t, u.Name, "")
+}
+
+func TestDecodeJSONErrorFromDecode(t *testing.T) {
+	bodyBytes := []byte(`/`)
+	strReader := bytes.NewBuffer(bodyBytes)
+	body := ioutil.NopCloser(strReader)
+	req := &http.Request{Header: http.Header{}, Body: body}
+	modifier := NewRequestModifier(req)
+	u := user{}
+	err := modifier.DecodeJSON(&u)
+	_, ok := (err).(*json.SyntaxError)
+	st.Expect(t, ok, true)
+	st.Expect(t, err.Error(), "invalid character '/' looking for beginning of value")
 	st.Expect(t, u.Name, "")
 }
