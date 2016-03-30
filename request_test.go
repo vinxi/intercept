@@ -3,6 +3,7 @@ package intercept
 import (
 	"bytes"
 	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"github.com/nbio/st"
 	"io/ioutil"
@@ -20,7 +21,8 @@ func (r *errorReader) Read(p []byte) (int, error) {
 }
 
 type user struct {
-	Name string
+	XMLName xml.Name `xml:"Person"`
+	Name    string
 }
 
 func TestNewRequestModifier(t *testing.T) {
@@ -118,4 +120,16 @@ func TestDecodeJSONErrorFromDecode(t *testing.T) {
 	st.Expect(t, ok, true)
 	st.Expect(t, err.Error(), "invalid character '/' looking for beginning of value")
 	st.Expect(t, u.Name, "")
+}
+
+func TestDecodeXML(t *testing.T) {
+	bodyBytes := []byte(`<Person><Name>Rick</Name></Person>`)
+	strReader := bytes.NewBuffer(bodyBytes)
+	body := ioutil.NopCloser(strReader)
+	req := &http.Request{Header: http.Header{}, Body: body}
+	modifier := NewRequestModifier(req)
+	u := user{}
+	err := modifier.DecodeXML(&u, nil)
+	st.Expect(t, err, nil)
+	st.Expect(t, u.Name, "Rick")
 }
