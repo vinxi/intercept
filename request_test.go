@@ -94,6 +94,18 @@ func TestDecodeJSONErrorFromReadBytes(t *testing.T) {
 	st.Expect(t, u.Name, "")
 }
 
+func TestDecodeJSONEOF(t *testing.T) {
+	bodyBytes := []byte("")
+	strReader := bytes.NewBuffer(bodyBytes)
+	body := ioutil.NopCloser(strReader)
+	req := &http.Request{Header: http.Header{}, Body: body}
+	modifier := NewRequestModifier(req)
+	u := user{}
+	err := modifier.DecodeJSON(&u)
+	st.Expect(t, err, nil)
+	st.Expect(t, u.Name, "")
+}
+
 func TestDecodeJSONErrorFromDecode(t *testing.T) {
 	bodyBytes := []byte(`/`)
 	strReader := bytes.NewBuffer(bodyBytes)
