@@ -157,3 +157,15 @@ func TestDecodeXMLErrorFromDecode(t *testing.T) {
 	st.Expect(t, err.Error(), "XML syntax error on line 1: unescaped ]]> not in CDATA section")
 	st.Expect(t, u.Name, "")
 }
+
+func TestDecodeXMLEOF(t *testing.T) {
+	bodyBytes := []byte("")
+	strReader := bytes.NewBuffer(bodyBytes)
+	body := ioutil.NopCloser(strReader)
+	req := &http.Request{Header: http.Header{}, Body: body}
+	modifier := NewRequestModifier(req)
+	u := user{}
+	err := modifier.DecodeXML(&u, nil)
+	st.Expect(t, err, nil)
+	st.Expect(t, u.Name, "")
+}
