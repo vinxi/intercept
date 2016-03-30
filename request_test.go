@@ -133,3 +133,13 @@ func TestDecodeXML(t *testing.T) {
 	st.Expect(t, err, nil)
 	st.Expect(t, u.Name, "Rick")
 }
+
+func TestDecodeXMLErrorFromReadBytes(t *testing.T) {
+	body := ioutil.NopCloser(&errorReader{})
+	req := &http.Request{Header: http.Header{}, Body: body}
+	modifier := NewRequestModifier(req)
+	u := user{}
+	err := modifier.DecodeXML(&u, nil)
+	st.Expect(t, err, errRead)
+	st.Expect(t, u.Name, "")
+}
