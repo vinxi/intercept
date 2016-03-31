@@ -185,3 +185,10 @@ func TestStringGet(t *testing.T) {
 	modifier.String("hello")
 	st.Expect(t, req.Body, nil)
 }
+
+func TestStringHead(t *testing.T) {
+	req := &http.Request{Method: "HEAD", Header: http.Header{}}
+	modifier := NewRequestModifier(req)
+	modifier.String("hello")
+	st.Expect(t, req.Body, nil)
+}
