@@ -241,3 +241,13 @@ func TestJSONWithBytesAsParameter(t *testing.T) {
 	st.Expect(t, req.ContentLength, int64(len(input)))
 	st.Expect(t, req.Header.Get("Content-Type"), "application/json")
 }
+
+func TestJSONEncodingError(t *testing.T) {
+	req := &http.Request{Header: http.Header{}}
+	modifier := NewRequestModifier(req)
+	input := make(map[int]int)
+	err := modifier.JSON(input)
+	_, ok := err.(*json.UnsupportedTypeError)
+	st.Expect(t, ok, true)
+	st.Expect(t, err.Error(), "json: unsupported type: map[int]int")
+}
