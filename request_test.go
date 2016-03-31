@@ -21,7 +21,7 @@ func (r *errorReader) Read(p []byte) (int, error) {
 }
 
 type user struct {
-	XMLName xml.Name `xml:"Person"`
+	XMLName xml.Name `xml:"Person" json:"-"`
 	Name    string
 }
 
@@ -176,7 +176,7 @@ func TestBytes(t *testing.T) {
 	modifier.Bytes([]byte("hello"))
 	modifiedBody, err := ioutil.ReadAll(req.Body)
 	st.Expect(t, err, nil)
-	st.Expect(t, modifiedBody, []byte("hello"))
+	st.Expect(t, string(modifiedBody), "hello")
 }
 
 func TestStringGet(t *testing.T) {
@@ -199,5 +199,19 @@ func TestString(t *testing.T) {
 	modifier.String("hello")
 	modifiedBody, err := ioutil.ReadAll(req.Body)
 	st.Expect(t, err, nil)
-	st.Expect(t, modifiedBody, []byte("hello"))
+	st.Expect(t, string(modifiedBody), "hello")
+}
+
+func TestJSONWithStructAsParameter(t *testing.T) {
+	req := &http.Request{Header: http.Header{}}
+	modifier := NewRequestModifier(req)
+	u := &user{Name: "Rick"}
+	err := modifier.JSON(u)
+	st.Expect(t, err, nil)
+	modifiedBody, err := ioutil.ReadAll(req.Body)
+	st.Expect(t, err, nil)
+	expectedBody := "{\"Name\":\"Rick\"}\n"
+	st.Expect(t, string(modifiedBody), expectedBody)
+	st.Expect(t, req.ContentLength, int64(len(expectedBody)))
+	st.Expect(t, req.Header.Get("Content-Type"), "application/json")
 }
