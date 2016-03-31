@@ -169,3 +169,15 @@ func TestDecodeXMLEOF(t *testing.T) {
 	st.Expect(t, err, nil)
 	st.Expect(t, u.Name, "")
 }
+
+func TestBytes(t *testing.T) {
+	bodyBytes := []byte("")
+	strReader := bytes.NewBuffer(bodyBytes)
+	body := ioutil.NopCloser(strReader)
+	req := &http.Request{Header: http.Header{}, Body: body}
+	modifier := NewRequestModifier(req)
+	modifier.Bytes([]byte("hello"))
+	modifiedBody, err := ioutil.ReadAll(req.Body)
+	st.Expect(t, err, nil)
+	st.Expect(t, modifiedBody, []byte("hello"))
+}
