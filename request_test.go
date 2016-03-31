@@ -192,3 +192,12 @@ func TestStringHead(t *testing.T) {
 	modifier.String("hello")
 	st.Expect(t, req.Body, nil)
 }
+
+func TestString(t *testing.T) {
+	req := &http.Request{Method: "POST", Header: http.Header{}}
+	modifier := NewRequestModifier(req)
+	modifier.String("hello")
+	modifiedBody, err := ioutil.ReadAll(req.Body)
+	st.Expect(t, err, nil)
+	st.Expect(t, modifiedBody, []byte("hello"))
+}
