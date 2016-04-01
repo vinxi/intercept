@@ -251,3 +251,53 @@ func TestJSONEncodingError(t *testing.T) {
 	st.Expect(t, ok, true)
 	st.Expect(t, err.Error(), "json: unsupported type: map[int]int")
 }
+
+func TestXMLWithStructAsParameter(t *testing.T) {
+	req := &http.Request{Header: http.Header{}}
+	modifier := NewRequestModifier(req)
+	u := &user{Name: "Rick"}
+	err := modifier.XML(u)
+	st.Expect(t, err, nil)
+	modifiedBody, err := ioutil.ReadAll(req.Body)
+	st.Expect(t, err, nil)
+	expectedBody := `<Person><Name>Rick</Name></Person>`
+	st.Expect(t, string(modifiedBody), expectedBody)
+	st.Expect(t, req.ContentLength, int64(len(expectedBody)))
+	st.Expect(t, req.Header.Get("Content-Type"), "application/xml")
+}
+
+func TestXMLWithStringAsParameter(t *testing.T) {
+	req := &http.Request{Header: http.Header{}}
+	modifier := NewRequestModifier(req)
+	input := `<Person><Name>Rick</Name></Person>`
+	err := modifier.XML(input)
+	st.Expect(t, err, nil)
+	modifiedBody, err := ioutil.ReadAll(req.Body)
+	st.Expect(t, err, nil)
+	st.Expect(t, string(modifiedBody), input)
+	st.Expect(t, req.ContentLength, int64(len(input)))
+	st.Expect(t, req.Header.Get("Content-Type"), "application/xml")
+}
+
+func TestXMLWithBytesAsParameter(t *testing.T) {
+	req := &http.Request{Header: http.Header{}}
+	modifier := NewRequestModifier(req)
+	input := []byte(`<Person><Name>Rick</Name></Person>`)
+	err := modifier.XML(input)
+	st.Expect(t, err, nil)
+	modifiedBody, err := ioutil.ReadAll(req.Body)
+	st.Expect(t, err, nil)
+	st.Expect(t, string(modifiedBody), string(input))
+	st.Expect(t, req.ContentLength, int64(len(input)))
+	st.Expect(t, req.Header.Get("Content-Type"), "application/xml")
+}
+
+func TestXMLEncodingError(t *testing.T) {
+	req := &http.Request{Header: http.Header{}}
+	modifier := NewRequestModifier(req)
+	input := make(map[int]int)
+	err := modifier.XML(input)
+	_, ok := err.(*xml.UnsupportedTypeError)
+	st.Expect(t, ok, true)
+	st.Expect(t, err.Error(), "xml: unsupported type: map[int]int")
+}
