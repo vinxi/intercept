@@ -182,11 +182,6 @@ func Request(h ReqModifierFunc) *RequestInterceptor {
 // HandleHTTP handles the middleware call chain, intercepting the request data if possible.
 // This methods implements the middleware layer compatible interface.
 func (s *RequestInterceptor) HandleHTTP(w http.ResponseWriter, r *http.Request, h http.Handler) {
-	if r.Method == "HEAD" || r.Method == "OPTIONS" {
-		h.ServeHTTP(w, r)
-		return
-	}
-
 	req := NewRequestModifier(r)
 	s.Modifier(req)
 	h.ServeHTTP(w, req.Request)
