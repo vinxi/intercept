@@ -6,7 +6,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"github.com/nbio/st"
-	"gopkg.in/vinci-proxy/utils.v0"
+	"gopkg.in/vinxi/utils.v0"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -364,4 +364,43 @@ func TestHandleHTTP(t *testing.T) {
 		st.Expect(t, string(requestBody), "Hello")
 	})
 	interceptor.HandleHTTP(stubbedWriter, req, handler)
+}
+
+func TestFilterWithRequestFilteredOut(t *testing.T) {
+	interceptor := interceptorWithFilters()
+	stubbedWriter := utils.NewWriterStub()
+	req := &http.Request{Method: "POST"}
+	handler := http.HandlerFunc(func(writer http.ResponseWriter, r *http.Request) {
+		st.Expect(t, r.Header.Get("intercepted"), "")
+	})
+	interceptor.HandleHTTP(stubbedWriter, req, handler)
+}
+
+func TestFilterWithRequestFilteredIn(t *testing.T) {
+	interceptor := interceptorWithFilters()
+	stubbedWriter := utils.NewWriterStub()
+	req := &http.Request{Method: "POST", Header: http.Header{}}
+	req.Header.Set("filter2", "true")
+	req.Header.Set("filter3", "true")
+	handler := http.HandlerFunc(func(writer http.ResponseWriter, r *http.Request) {
+		st.Expect(t, r.Header.Get("intercepted"), "true")
+	})
+	interceptor.HandleHTTP(stubbedWriter, req, handler)
+}
+
+func interceptorWithFilters() *RequestInterceptor {
+	interceptor := Request(func(m *RequestModifier) {
+		m.Header.Set("intercepted", "true")
+	})
+	filter1 := func(r *http.Request) bool {
+		return r.Method == "POST"
+	}
+	filter2 := func(r *http.Request) bool {
+		return r.Header.Get("filter2") == "true"
+	}
+	interceptor.Filter(filter1, filter2)
+	interceptor.Filter(func(r *http.Request) bool {
+		return r.Header.Get("filter3") == "true"
+	})
+	return interceptor
 }

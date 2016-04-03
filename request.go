@@ -18,6 +18,9 @@ type XMLCharDecoder func(charset string, input io.Reader) (io.Reader, error)
 // ReqModifierFunc represent the function interface for request modifiers.
 type ReqModifierFunc func(*RequestModifier)
 
+// Filter defines whether a RequestModifier should be applied or not.
+type Filter func(*http.Request) bool
+
 // RequestModifier implements a convenient abstraction to modify an http.Request,
 // including methods to read, decode/encode and define JSON/XML/String/Binary bodies
 // and modify HTTP headers.
@@ -172,17 +175,34 @@ func (s *RequestModifier) Reader(body io.Reader) error {
 // RequestInterceptor interceps a given http.Request using a custom request modifier function.
 type RequestInterceptor struct {
 	Modifier ReqModifierFunc
+	Filters  []Filter
 }
 
 // Request intercepts an HTTP request and passes it to the given request modifier function.
 func Request(h ReqModifierFunc) *RequestInterceptor {
-	return &RequestInterceptor{Modifier: h}
+	return &RequestInterceptor{Modifier: h, Filters: []Filter{}}
+}
+
+// Filter intercepts an HTTP requests if and only if the given filter returns true.
+func (s *RequestInterceptor) Filter(f ...Filter) {
+	s.Filters = append(s.Filters, f...)
 }
 
 // HandleHTTP handles the middleware call chain, intercepting the request data if possible.
 // This methods implements the middleware layer compatible interface.
 func (s *RequestInterceptor) HandleHTTP(w http.ResponseWriter, r *http.Request, h http.Handler) {
-	req := NewRequestModifier(r)
-	s.Modifier(req)
-	h.ServeHTTP(w, req.Request)
+	if s.filter(r) {
+		req := NewRequestModifier(r)
+		s.Modifier(req)
+	}
+	h.ServeHTTP(w, r)
+}
+
+func (s RequestInterceptor) filter(req *http.Request) bool {
+	for _, filter := range s.Filters {
+		if !filter(req) {
+			return false
+		}
+	}
+	return true
 }
