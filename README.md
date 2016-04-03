@@ -1,6 +1,6 @@
 # intercept [![Build Status](https://travis-ci.org/vinxi/intercept.png)](https://travis-ci.org/vinxi/intercept) [![GitHub release](https://img.shields.io/badge/version-0.1.0-orange.svg?style=flat)](https://github.com/vinxi/intercept/releases) [![GoDoc](https://godoc.org/github.com/vinxi/intercept?status.svg)](https://godoc.org/github.com/vinxi/intercept) [![Coverage Status](https://coveralls.io/repos/github/vinxi/intercept/badge.svg?branch=master)](https://coveralls.io/github/vinxi/intercept?branch=master) [![Go Report Card](https://goreportcard.com/badge/github.com/vinxi/intercept)](https://goreportcard.com/report/github.com/vinxi/intercept)
 
-Middleware to easily intercept and/or modify HTTP requests/responses before send them to the client/server.
+Middleware to easily intercept and/or modify HTTP requests/responses before sending them to the client/server.
 
 ## Installation
 
@@ -10,7 +10,7 @@ go get -u gopkg.in/vinxi/intercept.v0
 
 ## API
 
-See [godoc reference](https://godoc.org/github.com/vinxi/intercept) for detailed API documentation.
+See the [godoc reference](https://godoc.org/github.com/vinxi/intercept) for detailed API documentation.
 
 ## Examples
 
@@ -53,4 +53,4 @@ func main() {
 
 ## License
 
-[MIT](https://opensource.org/licenses/MIT).
+[MIT](LICENSE.md)
