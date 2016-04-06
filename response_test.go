@@ -198,3 +198,16 @@ func TestResponseModifierByte(t *testing.T) {
 	st.Expect(t, err, nil)
 	st.Expect(t, string(body), "Rick")
 }
+
+func TestResponseModifierJSONFromStruct(t *testing.T) {
+	req := &http.Request{}
+	resp := &http.Response{Header: http.Header{}}
+	modifier := NewResponseModifier(req, resp)
+	u := &user{Name: "Rick"}
+	modifier.JSON(u)
+	body, err := ioutil.ReadAll(resp.Body)
+	st.Expect(t, err, nil)
+	st.Expect(t, resp.ContentLength, int64(len(body)))
+	st.Expect(t, resp.Header.Get("Content-Type"), "application/json")
+	st.Expect(t, string(body), "{\"Name\":\"Rick\"}\n")
+}
