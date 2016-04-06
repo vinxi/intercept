@@ -237,3 +237,42 @@ func TestResponseModifierJSONFromBytes(t *testing.T) {
 	st.Expect(t, resp.Header.Get("Content-Type"), "application/json")
 	st.Expect(t, string(body), string(input))
 }
+
+func TestResponseModifierXMLFromStruct(t *testing.T) {
+	req := &http.Request{}
+	resp := &http.Response{Header: http.Header{}}
+	modifier := NewResponseModifier(req, resp)
+	u := &user{Name: "Rick"}
+	modifier.XML(u)
+	body, err := ioutil.ReadAll(resp.Body)
+	st.Expect(t, err, nil)
+	st.Expect(t, resp.ContentLength, int64(len(body)))
+	st.Expect(t, resp.Header.Get("Content-Type"), "application/xml")
+	st.Expect(t, string(body), "<Person><Name>Rick</Name></Person>")
+}
+
+func TestResponseModifierXMLFromString(t *testing.T) {
+	req := &http.Request{}
+	resp := &http.Response{Header: http.Header{}}
+	modifier := NewResponseModifier(req, resp)
+	input := `<Person><Name>Rick</Name></Person>`
+	modifier.XML(input)
+	body, err := ioutil.ReadAll(resp.Body)
+	st.Expect(t, err, nil)
+	st.Expect(t, resp.ContentLength, int64(len(body)))
+	st.Expect(t, resp.Header.Get("Content-Type"), "application/xml")
+	st.Expect(t, string(body), input)
+}
+
+func TestResponseModifierXMLFromBytes(t *testing.T) {
+	req := &http.Request{}
+	resp := &http.Response{Header: http.Header{}}
+	modifier := NewResponseModifier(req, resp)
+	input := []byte(`<Person><Name>Rick</Name></Person>`)
+	modifier.XML(input)
+	body, err := ioutil.ReadAll(resp.Body)
+	st.Expect(t, err, nil)
+	st.Expect(t, resp.ContentLength, int64(len(body)))
+	st.Expect(t, resp.Header.Get("Content-Type"), "application/xml")
+	st.Expect(t, string(body), string(input))
+}
