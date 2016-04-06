@@ -224,3 +224,16 @@ func TestResponseModifierJSONFromString(t *testing.T) {
 	st.Expect(t, resp.Header.Get("Content-Type"), "application/json")
 	st.Expect(t, string(body), input)
 }
+
+func TestResponseModifierJSONFromBytes(t *testing.T) {
+	req := &http.Request{}
+	resp := &http.Response{Header: http.Header{}}
+	modifier := NewResponseModifier(req, resp)
+	input := []byte(`{"Name":"Rick"}`)
+	modifier.JSON(input)
+	body, err := ioutil.ReadAll(resp.Body)
+	st.Expect(t, err, nil)
+	st.Expect(t, resp.ContentLength, int64(len(body)))
+	st.Expect(t, resp.Header.Get("Content-Type"), "application/json")
+	st.Expect(t, string(body), string(input))
+}
