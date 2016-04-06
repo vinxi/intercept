@@ -151,19 +151,19 @@ func (s *ResponseModifier) Reader(body io.Reader) error {
 		rc = ioutil.NopCloser(body)
 	}
 
-	req := s.Request
+	resp := s.Response
 	if body != nil {
 		switch v := body.(type) {
 		case *bytes.Buffer:
-			req.ContentLength = int64(v.Len())
+			resp.ContentLength = int64(v.Len())
 		case *bytes.Reader:
-			req.ContentLength = int64(v.Len())
+			resp.ContentLength = int64(v.Len())
 		case *strings.Reader:
-			req.ContentLength = int64(v.Len())
+			resp.ContentLength = int64(v.Len())
 		}
 	}
 
-	req.Body = rc
+	resp.Body = rc
 	return nil
 }
 

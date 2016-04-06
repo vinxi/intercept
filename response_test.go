@@ -1,9 +1,11 @@
 package intercept
 
 import (
+	"bytes"
 	"encoding/json"
 	"encoding/xml"
 	"github.com/nbio/st"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -275,4 +277,43 @@ func TestResponseModifierXMLFromBytes(t *testing.T) {
 	st.Expect(t, resp.ContentLength, int64(len(body)))
 	st.Expect(t, resp.Header.Get("Content-Type"), "application/xml")
 	st.Expect(t, string(body), string(input))
+}
+
+func TestResponseModifierReaderFromBytesBuffer(t *testing.T) {
+	req := &http.Request{}
+	resp := &http.Response{}
+	modifier := NewResponseModifier(req, resp)
+	reader := bytes.NewBuffer([]byte("Hello"))
+	err := modifier.Reader(reader)
+	st.Expect(t, err, nil)
+	_, ok := resp.Body.(io.ReadCloser)
+	st.Expect(t, ok, true)
+	body, _ := ioutil.ReadAll(resp.Body)
+	st.Expect(t, string(body), "Hello")
+}
+
+func TestResponseModifierReaderFromBytesReader(t *testing.T) {
+	req := &http.Request{}
+	resp := &http.Response{}
+	modifier := NewResponseModifier(req, resp)
+	reader := bytes.NewReader([]byte("Hello"))
+	err := modifier.Reader(reader)
+	st.Expect(t, err, nil)
+	_, ok := resp.Body.(io.ReadCloser)
+	st.Expect(t, ok, true)
+	body, _ := ioutil.ReadAll(resp.Body)
+	st.Expect(t, string(body), "Hello")
+}
+
+func TestResponseModifierReaderFromStringReader(t *testing.T) {
+	req := &http.Request{}
+	resp := &http.Response{}
+	modifier := NewResponseModifier(req, resp)
+	reader := strings.NewReader("Hello")
+	err := modifier.Reader(reader)
+	st.Expect(t, err, nil)
+	_, ok := resp.Body.(io.ReadCloser)
+	st.Expect(t, ok, true)
+	body, _ := ioutil.ReadAll(resp.Body)
+	st.Expect(t, string(body), "Hello")
 }
